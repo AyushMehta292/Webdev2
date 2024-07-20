@@ -1,0 +1,250 @@
+01basicreact
+    Folder Structure
+
+01vitereact
+    Folder Structure in Vite
+
+02counter
+
+    useState:- direct state updates and the functional updates
+    const addValue = () => {
+    // Using functional updates to ensure each update is based on the latest state
+    setCounter(prevCounter => prevCounter + 1);  // setCounter(counter + 1); -> direct state update
+    setCounter(prevCounter => prevCounter + 1);
+    setCounter(prevCounter => prevCounter + 1);
+    setCounter(prevCounter => prevCounter + 1);
+  }
+
+03tailwindprops
+    Props and tailwindcss
+
+04bgChanger
+    useEffect, useMemo, useCallback, useRef
+
+Custom hooks
+
+Three ways to make react app faster;- 
+
+ 1.  Lazy loading and suspense component
+    import React, { Suspense } from 'react';
+
+    // Lazy load the component
+    const LazyComponent = React.lazy(() => import('./LazyComponent'));
+
+    function App() {
+      return (
+        <div>
+          <h1>Welcome to My App</h1>
+          <Suspense fallback={<div>Loading...</div>}>
+            <LazyComponent />
+          </Suspense>
+        </div>
+      );
+    }
+
+    export default App;
+
+ 2.   useMemo
+
+
+ 3.  useCallback function and removeEventListener in the return statement of useEffect
+    const cachedFn = useCallback(fn, dependencies)
+  
+  
+useRef
+    import { useRef } from 'react';
+
+    export default function Counter() {
+      let ref = useRef(0);
+
+      function handleClick() {
+        ref.current = ref.current + 1;
+        alert('You clicked ' + ref.current + ' times!');
+      }
+
+      return (
+        <button onClick={handleClick}>
+          Click me!
+        </button>
+      );
+    }
+
+  useContext
+      UserContext.js:
+
+      import React, { createContext, useState } from 'react';
+
+      export const UserContext = createContext();
+
+      export const UserProvider = ({ children }) => {
+        const [user, setUser] = useState({ name: 'John Doe', age: 30 });
+
+        return (
+          <UserContext.Provider value={{ user, setUser }}>
+            {children}
+          </UserContext.Provider>
+        );
+      };
+
+      App.js:
+
+      import React from 'react';
+      import { UserProvider } from './UserContext';
+      import UserProfile from './UserProfile';
+
+      const App = () => {
+        return (
+          <UserProvider>
+            <UserProfile />
+          </UserProvider>
+        );
+      };
+
+      export default App;
+
+      UserProfile.js:
+
+      import React, { useContext } from 'react';
+      import { UserContext } from './UserContext';
+
+      const UserProfile = () => {
+        const { user, setUser } = useContext(UserContext);
+
+        const updateUserName = () => {
+          setUser({ ...user, name: 'Jane Doe' });
+        };
+
+        return (
+          <div>
+            <h1>User Profile</h1>
+            <p>Name: {user.name}</p>
+            <p>Age: {user.age}</p>
+            <button onClick={updateUserName}>Change Name</button>
+          </div>
+        );
+      };
+
+      export default UserProfile;
+
+Importance of key prop:-
+  key prop lets the react to differentiate b/w a component used twice or more than twice and treat them as different components
+
+
+react route
+        index.js file:
+
+        import ReactDOM from "react-dom/client";
+        import { BrowserRouter, Routes, Route } from "react-router-dom";
+        import Layout from "./pages/Layout";
+        import Home from "./pages/Home";
+        import Blogs from "./pages/Blogs";
+        import Contact from "./pages/Contact";
+        import NoPage from "./pages/NoPage";
+
+        export default function App() {
+          return (
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Home />} />
+                  <Route path="blogs" element={<Blogs />} />
+                  <Route path="contact" element={<Contact />} />
+                  <Route path="*" element={<NoPage />} />
+                </Route>
+              </Routes>
+            </BrowserRouter>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+        Example Explained
+        We wrap our content first with <BrowserRouter>.
+
+        Then we define our <Routes>. An application can have multiple <Routes>. Our basic example only uses one.
+
+        <Route>s can be nested. The first <Route> has a path of / and renders the Layout component.
+
+        The nested <Route>s inherit and add to the parent route. So the blogs path is combined with the parent and becomes /blogs.
+
+        The Home component route does not have a path but has an index attribute. That specifies this route as the default route for the parent route, which is /.
+
+        Setting the path to * will act as a catch-all for any undefined URLs. This is great for a 404 error page.
+
+
+React-Redux toolkit
+  store.js
+      import { configureStore } from '@reduxjs/toolkit';
+      import counterReducer from './counterSlice';
+
+      const store = configureStore({
+        reducer: {
+          counter: counterReducer,
+        },
+      });
+
+      export default store;
+
+  counterSlice.js
+    import { createReducer } from '@reduxjs/toolkit';
+
+    const initialState = { value: 0 };
+
+    const counterReducer = createReducer(initialState, () => {
+      incrementByValue:(state, action)=>{
+        state.value+= action.payload;
+      }
+    });
+
+    export default counterReducer;  
+
+  OR counterSlice.js    //in Counter.js, import { incrementByValue } from './counterSlice';
+    import { createSlice } from '@reduxjs/toolkit';
+
+    const initialState = { value: 0 };
+
+    const counterSlice = createSlice({
+      name: 'counter',
+      initialState,
+      reducers: {
+        incrementByValue: (state, action) => {
+          state.value += action.payload;
+        },
+      },
+    });
+
+    export const { incrementByValue } = counterSlice.actions;
+    export default counterSlice.reducer;
+
+  App.js
+    import React from 'react';
+    import { Provider } from 'react-redux';
+    import store from './store';
+    import Counter from './Counter';
+
+    const App = () => (
+      <Provider store={store}>
+        <Counter />
+      </Provider>
+    );
+
+    export default App;
+
+  Counter.js
+    import React from 'react';
+    import { useSelector, useDispatch } from 'react-redux';
+
+    const Counter = () => {
+      const count = useSelector((state) => state.counter.value);
+      const dispatch = useDispatch();
+
+      return (
+        <div>
+          <h1>Count: {count}</h1>
+          <button onClick={() => dispatch({type:"incrementByValue", payload:25,})}>Increment By 25</button>
+        </div>
+      );
+    };
+
+    export default Counter;
